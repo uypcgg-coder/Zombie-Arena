@@ -1,0 +1,84 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "CreditsUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 320, 0, 90)
+frame.Position = UDim2.new(0.02, 0, 0.05, 0)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+frame.BackgroundTransparency = 0.1
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 18)
+corner.Parent = frame
+
+local stroke = Instance.new("UIStroke")
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(55, 255, 125)
+stroke.Transparency = 0.4
+stroke.Parent = frame
+
+local icon = Instance.new("TextLabel")
+icon.Size = UDim2.new(0, 80, 1, 0)
+icon.BackgroundTransparency = 1
+icon.Text = "💵"
+icon.TextScaled = true
+icon.Font = Enum.Font.GothamBlack
+icon.Parent = frame
+
+local credits = Instance.new("TextLabel")
+credits.Size = UDim2.new(1, -95, 1, 0)
+credits.Position = UDim2.new(0, 90, 0, 0)
+credits.BackgroundTransparency = 1
+credits.TextColor3 = Color3.fromRGB(255, 255, 255)
+credits.TextXAlignment = Enum.TextXAlignment.Left
+credits.Font = Enum.Font.GothamBlack
+credits.TextScaled = true
+credits.Parent = frame
+
+local creditValue = player:WaitForChild("Credits")
+
+local function FormatNumber(num)
+	if num >= 1e12 then
+		return string.format("%.2f", num / 1e12):gsub("%.?0+$", "") .. "T"
+	elseif num >= 1e9 then
+		return string.format("%.2f", num / 1e9):gsub("%.?0+$", "") .. "B"
+	elseif num >= 1e6 then
+		return string.format("%.2f", num / 1e6):gsub("%.?0+$", "") .. "M"
+	elseif num >= 1e3 then
+		return string.format("%.2f", num / 1e3):gsub("%.?0+$", "") .. "K"
+	else
+		return tostring(num)
+	end
+end
+
+local function UpdateCredits()
+	credits.Text = FormatNumber(creditValue.Value)
+end
+
+UpdateCredits()
+creditValue.Changed:Connect(UpdateCredits)
+
+local StarterGui = game:GetService("StarterGui")
+
+-- Langsung matikan UI
+pcall(function()
+    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
+end)
+
+-- Setting grafik
+settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+
+-- Performance Mode
+local args = {
+	"PerformanceMode",
+	true
+}
+game:GetService("ReplicatedStorage"):WaitForChild("DataRemotes"):WaitForChild("SetSetting"):FireServer(unpack(args))
