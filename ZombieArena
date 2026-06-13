@@ -65,17 +65,6 @@ end
 UpdateCredits()
 creditValue.Changed:Connect(UpdateCredits)
 
-local StarterGui = game:GetService("StarterGui")
-
--- Langsung matikan UI
-pcall(function()
-    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
-    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
-end)
-
--- Setting grafik
-settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-
 -- Performance Mode
 local args = {
 	"PerformanceMode",
