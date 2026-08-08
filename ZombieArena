@@ -64,10 +64,3 @@ end
 
 UpdateCredits()
 creditValue.Changed:Connect(UpdateCredits)
-
--- Performance Mode
-local args = {
-	"PerformanceMode",
-	true
-}
-game:GetService("ReplicatedStorage"):WaitForChild("DataRemotes"):WaitForChild("SetSetting"):FireServer(unpack(args))
