@@ -1,3 +1,4 @@
+task.wait(5)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
@@ -6,12 +7,15 @@ gui.Name = "CreditsUI"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
+local TweenService = game:GetService("TweenService")
+
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 320, 0, 90)
 frame.Position = UDim2.new(0.02, 0, 0.05, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 frame.BackgroundTransparency = 0.1
 frame.BorderSizePixel = 0
+frame.ClipsDescendants = true -- Supaya isinya ga bleber pas mengecil
 frame.Parent = gui
 
 local corner = Instance.new("UICorner")
@@ -24,13 +28,19 @@ stroke.Color = Color3.fromRGB(55, 255, 125)
 stroke.Transparency = 0.4
 stroke.Parent = frame
 
+-- === ISI KETIKA BESAR (TEXT) ===
+local textContainer = Instance.new("Frame")
+textContainer.Size = UDim2.new(1, 0, 1, 0)
+textContainer.BackgroundTransparency = 1
+textContainer.Parent = frame
+
 local icon = Instance.new("TextLabel")
 icon.Size = UDim2.new(0, 80, 1, 0)
 icon.BackgroundTransparency = 1
-icon.Text = "💵"
+icon.Text = "$"
 icon.TextScaled = true
 icon.Font = Enum.Font.GothamBlack
-icon.Parent = frame
+icon.Parent = textContainer
 
 local credits = Instance.new("TextLabel")
 credits.Size = UDim2.new(1, -95, 1, 0)
@@ -40,7 +50,56 @@ credits.TextColor3 = Color3.fromRGB(255, 255, 255)
 credits.TextXAlignment = Enum.TextXAlignment.Left
 credits.Font = Enum.Font.GothamBlack
 credits.TextScaled = true
-credits.Parent = frame
+credits.Parent = textContainer
+
+-- === ISI KETIKA KECIL (TEKS LOGO) ===
+local miniLogo = Instance.new("TextLabel")
+miniLogo.Size = UDim2.new(1, -20, 1, -20)
+miniLogo.Position = UDim2.new(0.5, 0, 0.5, 0)
+miniLogo.AnchorPoint = Vector2.new(0.5, 0.5)
+miniLogo.BackgroundTransparency = 1
+miniLogo.Text = "XSPCX"
+miniLogo.TextColor3 = Color3.fromRGB(55, 255, 125) -- Warnanya disamain kayak garis pinggir
+miniLogo.Font = Enum.Font.GothamBlack
+miniLogo.TextScaled = true
+miniLogo.TextTransparency = 1 -- Sembunyikan di awal
+miniLogo.Parent = frame
+
+-- === TOMBOL INVISIBLE BUAT KLIK ===
+local clickButton = Instance.new("TextButton")
+clickButton.Size = UDim2.new(1, 0, 1, 0)
+clickButton.BackgroundTransparency = 1
+clickButton.Text = ""
+clickButton.ZIndex = 99 -- Pastikan ZIndex tinggi biar nggak ketutupan
+clickButton.Parent = frame
+
+-- === LOGIKA ANIMASI (TWEEN) DITARUH DI ATAS ===
+-- (Biar nggak keblokir sama WaitForChild)
+local isKecil = false
+local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+-- Pake 'Activated' lebih responsif (terutama buat layar sentuh/mobile)
+clickButton.Activated:Connect(function()
+    isKecil = not isKecil
+    
+    if isKecil then
+        -- Mengecil jadi ukuran 90x90 (kotak pas)
+        TweenService:Create(frame, tweenInfo, {Size = UDim2.new(0, 90, 0, 90)}):Play()
+        -- Hilangkan teks credit
+        TweenService:Create(icon, tweenInfo, {TextTransparency = 1}):Play()
+        TweenService:Create(credits, tweenInfo, {TextTransparency = 1}):Play()
+        -- Munculkan Teks Logo Kecil
+        TweenService:Create(miniLogo, tweenInfo, {TextTransparency = 0}):Play()
+    else
+        -- Membesar balik ke ukuran awal
+        TweenService:Create(frame, tweenInfo, {Size = UDim2.new(0, 320, 0, 90)}):Play()
+        -- Munculkan teks credit
+        TweenService:Create(icon, tweenInfo, {TextTransparency = 0}):Play()
+        TweenService:Create(credits, tweenInfo, {TextTransparency = 0}):Play()
+        -- Hilangkan Teks Logo Kecil
+        TweenService:Create(miniLogo, tweenInfo, {TextTransparency = 1}):Play()
+    end
+end)
 
 local creditValue = player:WaitForChild("Credits")
 
@@ -64,3 +123,12 @@ end
 
 UpdateCredits()
 creditValue.Changed:Connect(UpdateCredits)
+
+local StarterGui = game:GetService("StarterGui")
+
+-- Performance Mode
+local args = {
+	"PerformanceMode",
+	true
+}
+game:GetService("ReplicatedStorage"):WaitForChild("DataRemotes"):WaitForChild("SetSetting"):FireServer(unpack(args))
